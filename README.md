@@ -2,15 +2,19 @@
 
 **Config file to labeled synthetic dataset, in one command.**
 
-SynthPipe reads a YAML config, runs a Blender generator in the background and writes a YOLO dataset. Every run saves the exact settings, seed and versions next to the dataset, so the same config and seed rebuild it again.
+SynthPipe reads a YAML config, runs a Blender generator in the background and writes a YOLO dataset. ...
 
-```bash
-synthpipe generate --config configs/tools.yaml
-```
+The first generator is ToolVision, a hand-tool dataset ...
 
-The first generator is [ToolVision](https://github.com/moin77/toolvision), a hand-tool dataset (wrench, screwdriver, hammer, pliers) rendered in Blender Cycles.
+> Status: v0.2: generate + validate. Auto-labeling and Hugging Face publishing are coming next.
 
-> Status: v0.1, the generate step. Validation, auto-labeling and Hugging Face publishing are coming next.
+## Example report
+
+Every run ends with a quality report like this one, made from the 1,500-image ToolVision dataset (3,177 boxes, all checks passed):
+
+[![Quality report](docs/report_preview.png)](https://moin77.github.io/synthpipe/example_report.html)
+
+**[Open the full interactive report →](https://moin77.github.io/synthpipe/example_report.html)**
 
 ## Install
 
