@@ -1,0 +1,54 @@
+# SynthPipe config: ToolVision hand-tool dataset (Blender backend)
+# Relative paths are relative to THIS file's folder.
+# Run:  synthpipe generate --config configs/tools.yaml --count 20
+
+name: toolvision-v1.2
+backend: blender
+seed: 42
+count: 1500
+start: 0
+
+output:
+  dir: E:/Sythetic_Data/tool-detector/synthpipe_runs/toolvision_seed42
+  format: yolo
+  overwrite: false
+
+blender:
+  exe: C:/Program Files/Blender Foundation/Blender 4.5/blender.exe
+  blend_file: E:/Sythetic_Data/tool-detector/generator.blend   # EDIT: where your generator.blend is
+  script: ../generators/toolvision_blender.py
+
+assets:
+  hdri_dir: E:/Sythetic_Data/wrench_demo/assets/hdri
+  texture_dir: E:/Sythetic_Data/wrench_demo/assets/textures
+
+classes: [wrench, screwdriver, hammer, pliers]
+
+# Blender object names in generator.blend (each needs a class_id custom property)
+objects:
+  - combination_wrench
+  - screwdriver
+  - screwdrivers_02_a
+  - screwdrivers_02_b
+  - wooden_hammer_01
+  - pliers_a
+
+render:
+  resolution: [1024, 768]   # long side, short side (4:3 like a phone)
+  samples: 64               # Cycles samples, denoised
+  lens_mm: 26               # roughly a phone main camera
+
+randomization:
+  tools_per_image: [1, 4]
+  scatter_radius_m: 0.20
+  min_tool_spacing_m: 0.12
+  tool_scale: [0.85, 1.15]
+  flip_chance: 0.5
+  cam_distance_m: [0.30, 0.90]
+  cam_elevation_deg: [40, 85]     # 90 = straight down
+  portrait_chance: 0.4
+  hdri_strength: [0.2, 1.8]
+  spot_chance: 0.35               # "flashlight in a dark room" images
+  exposure: [-0.3, 0.8]
+  textured_floor_chance: 0.75
+  min_box_fraction: 0.01          # skip boxes smaller than 1% of the image

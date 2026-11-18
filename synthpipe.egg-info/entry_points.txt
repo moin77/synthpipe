@@ -1,0 +1,2 @@
+[console_scripts]
+synthpipe = synthpipe.cli:main

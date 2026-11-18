@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "synthpipe"
+dynamic = ["version"]
+description = "Config file to labeled synthetic dataset, in one command (Blender backend)."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [{ name = "Moinul Islam" }]
+dependencies = ["pyyaml>=6.0"]
+
+[project.optional-dependencies]
+compare = ["pillow", "numpy"]
+dev = ["pytest", "pillow", "numpy"]
+
+[project.scripts]
+synthpipe = "synthpipe.cli:main"
+
+[tool.setuptools.dynamic]
+version = { attr = "synthpipe.__version__" }
+
+[tool.setuptools.packages.find]
+include = ["synthpipe*"]

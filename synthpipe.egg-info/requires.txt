@@ -1,0 +1,10 @@
+pyyaml>=6.0
+
+[compare]
+pillow
+numpy
+
+[dev]
+pytest
+pillow
+numpy
