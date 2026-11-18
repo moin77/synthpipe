@@ -64,6 +64,13 @@ DEFAULTS = {
         "textured_floor_chance": 0.75,
         "min_box_fraction": 0.01,
     },
+    "validation": {
+        "enabled": True,          # run checks + HTML report after every generate
+        "tiny_box": 0.01,         # warn on boxes narrower/shorter than this fraction of the image
+        "imbalance_ratio": 3.0,   # warn when largest class / smallest class is above this
+        "duplicate_iou": 0.95,    # warn when two same-class boxes overlap more than this
+        "samples": 12,            # images shown in the report gallery
+    },
 }
 
 # Which randomization keys are [min, max] ranges and which are 0-1 chances
@@ -244,6 +251,18 @@ def validate(cfg):
         if el[0] < 0 or el[1] > 90:
             errors.append("randomization.cam_elevation_deg: must stay within 0-90 (90 = straight down)")
 
+    v = cfg["validation"]
+    if not isinstance(v["enabled"], bool):
+        errors.append("validation.enabled: must be true or false")
+    if not (_is_number(v["tiny_box"]) and 0 <= v["tiny_box"] < 1):
+        errors.append("validation.tiny_box: must be between 0 and 1")
+    if not (_is_number(v["imbalance_ratio"]) and v["imbalance_ratio"] >= 1):
+        errors.append("validation.imbalance_ratio: must be 1 or more")
+    if not (_is_number(v["duplicate_iou"]) and 0 < v["duplicate_iou"] <= 1):
+        errors.append("validation.duplicate_iou: must be between 0 and 1")
+    if not (isinstance(v["samples"], int) and v["samples"] >= 0):
+        errors.append("validation.samples: must be a whole number, 0 or more")
+
     if errors:
         raise ConfigError("Config problems:\n  - " + "\n  - ".join(errors))
 
@@ -274,5 +293,6 @@ def config_hash(cfg):
     relevant.pop("output", None)
     relevant.pop("blender", None)
     relevant.pop("assets", None)
+    relevant.pop("validation", None)   # checks don't change the data itself
     text = json.dumps(relevant, sort_keys=True, separators=(",", ":"))
     return hashlib.sha256(text.encode("utf-8")).hexdigest()

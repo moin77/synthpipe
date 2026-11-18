@@ -52,3 +52,11 @@ randomization:
   exposure: [-0.3, 0.8]
   textured_floor_chance: 0.75
   min_box_fraction: 0.01          # skip boxes smaller than 1% of the image
+
+# Checks + HTML report after every run (synthpipe validate uses the same limits)
+validation:
+  enabled: true
+  tiny_box: 0.01          # warn on boxes narrower/shorter than 1% of the image
+  imbalance_ratio: 3.0    # warn when largest class has 3x the boxes of the smallest
+  duplicate_iou: 0.95     # warn when two same-class boxes overlap this much
+  samples: 12             # images shown in the report gallery

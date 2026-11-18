@@ -2,11 +2,15 @@
 
 **Config file to labeled synthetic dataset, in one command.**
 
-SynthPipe reads a YAML config, runs a Blender generator in the background and writes a YOLO dataset. ...
+SynthPipe reads a YAML config, runs a Blender generator in the background and writes a YOLO dataset. Every run saves the exact settings, seed and versions next to the dataset, so the same config and seed rebuild it again.
 
-The first generator is ToolVision, a hand-tool dataset ...
+```bash
+synthpipe generate --config configs/tools.yaml
+```
 
-> Status: v0.2: generate + validate. Auto-labeling and Hugging Face publishing are coming next.
+The first generator is [ToolVision](https://github.com/moin77/toolvision), a hand-tool dataset (wrench, screwdriver, hammer, pliers) rendered in Blender Cycles.
+
+> Status: v0.4: generate, validate, auto-label, CVAT review round-trip. Hugging Face publishing is next.
 
 ## Example report
 
@@ -39,6 +43,7 @@ pip install -e .[dev]       # optional: tests + image comparison
    ```bash
    synthpipe generate -c configs/tools.yaml --count 20 --out runs/test
    synthpipe generate -c configs/tools.yaml
+   synthpipe generate -c configs/tools.yaml --no-validate   # skip the checks
    ```
 
 Output:
@@ -50,10 +55,84 @@ output.dir/
 ├── classes.txt
 ├── run_config.json              # the full config the generator used
 ├── metadata.json                # seed, versions, class counts, config hash, rerun command
+├── validation.json              # every check result and issue
+├── quality_report.html          # visual report: charts, checks, sample images with boxes
 └── blender.log                  # full Blender output
 ```
 
 If a run fails, the folder gets a `RUN_FAILED.txt` with the reason, so a broken dataset is never mistaken for a good one.
+
+## Validation and the quality report
+
+Every `generate` run checks the new dataset and writes `quality_report.html`. You can also check any YOLO dataset, including real hand-labeled data:
+
+```bash
+synthpipe validate path/to/dataset                 # needs images/ and labels/ (train/val subfolders are fine)
+synthpipe validate path/to/dataset --classes wrench,screwdriver,hammer,pliers
+synthpipe validate path/to/dataset --strict        # warnings also fail (for CI)
+```
+
+| Errors (dataset is broken) | Warnings (worth a look) |
+|---|---|
+| Image without a label file, label without an image | Image with no boxes |
+| Image that can't be opened | Tiny boxes (default < 1% of the image) |
+| Label line that isn't `class x y w h` | Two same-class boxes almost on top of each other |
+| Class id not in the class list | Class imbalance (default > 3x) |
+| Box outside the image, zero-size box | No `classes.txt` |
+| A class with no boxes at all | |
+
+The report shows boxes per class, boxes per image, box sizes, where boxes land in the frame (a hot spot means objects are always centred), and sample images with their boxes drawn, problem images first. It is one HTML file with no internet needed, so it can be sent to a client as-is.
+
+Exit codes: `0` passed, `1` errors (or warnings with `--strict`).
+
+## Auto-labeling (pre-label real images with your model)
+
+A trained YOLO model draws the first boxes, so a person only corrects them instead of labeling from scratch:
+
+```bash
+pip install -e .[autolabel]     # adds ultralytics
+synthpipe autolabel --model runs/.../weights/best.pt --images new_photos --out prelabeled
+```
+
+Output: a normal YOLO dataset (`images/`, `labels/`, `classes.txt`), plus
+
+- `predictions.json`: every box with its confidence
+- `review_queue.txt`: images to check first (no boxes found, or a box below `--review-conf`, default 0.5), emptiest and least confident first
+- `quality_report.html`: the usual checks plus an auto-labeling section with the confidence spread
+
+**How good are the pre-labels?** If human labels already exist for the same images, add `--compare-to` and SynthPipe counts the edits a reviewer would make:
+
+```bash
+synthpipe autolabel -m best.pt -i real_test/images -o prelabeled --compare-to real_test/labels
+```
+
+```
+Human boxes: 178
+  correct, keep as is : ...
+  wrong class         : ...
+  box too loose/tight : ...
+  missed, must draw   : ...
+  extra, must delete  : ...
+```
+
+Matching: each human box is paired with the best-overlapping predicted box. IoU ≥ 0.5 with the same class is correct; IoU ≥ 0.5 with another class is a wrong class; a weaker same-class overlap needs adjusting; unmatched boxes are missed (human) or extra (model).
+
+Useful options: `--conf` (default 0.25), `--imgsz` (default 640), `--device 0` or `cpu`, `--overwrite`.
+
+## Human review in CVAT
+
+Pre-labels go to [CVAT](https://www.cvat.ai/) for a person to correct, then come back as a clean dataset with a record of every change. This is the human-in-the-loop workflow labeling teams use.
+
+```bash
+synthpipe cvat-export prelabeled --out cvat_task          # images.zip + annotations_yolo11.zip + steps
+# ... review in CVAT, then Export task dataset -> YOLO 1.1 ...
+synthpipe cvat-import task_yolo11.zip --task-dir cvat_task --out reviewed --minutes 25
+```
+
+- **Worst images first.** Images are renamed `0001_<name>.jpg`, `0002_...` from the review queue, so CVAT shows the images with no boxes or low-confidence boxes first.
+- **Fast upload.** Images are shrunk to 1600 px on the long side (`--max-side 0` keeps the originals). YOLO boxes are relative, so they still fit; the final dataset gets the original full-size images back.
+- **Safe class mapping.** Labels coming back from CVAT are matched by name, not position, so a different label order in the CVAT task can't swap classes.
+- **What changed.** The import compares the model's boxes with the reviewed ones: kept, class changed, adjusted, drawn by the reviewer, deleted. With `--minutes` it reports seconds per image.
 
 ## What the config controls
 
@@ -63,6 +142,7 @@ If a run fails, the folder gets a `RUN_FAILED.txt` with the reason, so a broken 
 | `classes`, `objects` | Class names and the Blender objects that belong to them |
 | `render` | Resolution, Cycles samples, lens |
 | `randomization` | Tools per image, scatter, scale, flips, camera distance and angle, HDRI strength, spotlight chance, exposure, floor textures |
+| `validation` | Turn checks on/off, tiny-box, imbalance and duplicate limits, gallery size |
 
 Typos and impossible values are caught before Blender starts:
 
