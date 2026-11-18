@@ -28,13 +28,21 @@ counts = {c: 0 for c in cfg["classes"]}
 for i in range(cfg["start"], cfg["start"] + cfg["count"]):
     rng = random.Random(cfg["seed"] * 1_000_003 + i)
     name = f"synth_{i:05d}"
-    with open(os.path.join(out, "images", name + ".jpg"), "wb") as f:
-        f.write(bytes(rng.randrange(256) for _ in range(64)))
+    color = (rng.randrange(256), rng.randrange(256), rng.randrange(256))
+    img_path = os.path.join(out, "images", name + ".jpg")
+    try:
+        from PIL import Image
+        Image.new("RGB", (64, 48), color).save(img_path, quality=95)
+    except ImportError:
+        with open(img_path, "wb") as f:
+            f.write(bytes(color) * 20)
     lines = []
-    for _ in range(rng.randint(*cfg["randomization"]["tools_per_image"])):
-        cid = rng.randrange(len(cfg["classes"]))
+    n_tools = rng.randint(*cfg["randomization"]["tools_per_image"])
+    for k in range(n_tools):
+        # first box cycles through the classes so every class appears
+        cid = i % len(cfg["classes"]) if k == 0 else rng.randrange(len(cfg["classes"]))
         counts[cfg["classes"][cid]] += 1
-        lines.append(f"{cid} {rng.random():.6f} {rng.random():.6f} 0.100000 0.100000")
+        lines.append(f"{cid} {rng.uniform(0.1, 0.9):.6f} {rng.uniform(0.1, 0.9):.6f} 0.100000 0.100000")
     with open(os.path.join(out, "labels", name + ".txt"), "w") as f:
         f.write("\n".join(lines) + "\n")
     print(f"[{i - cfg['start'] + 1}/{cfg['count']}] {name}: {len(lines)} boxes")

@@ -58,6 +58,15 @@ def test_generate_writes_dataset_and_metadata(setup):
     assert sp["status"] == "ok"
     assert len(sp["config_sha256"]) == 64
     assert "--python-exit-code" in sp["command"]
+    assert meta["validation"]["status"] in ("pass", "warnings")
+    assert (out / "quality_report.html").exists()
+    assert (out / "validation.json").exists()
+
+
+def test_no_validate_skips_report(setup):
+    tmp, make_cfg = setup
+    assert run(["generate", "-c", make_cfg(), "-q", "--no-validate"]) == 0
+    assert not (tmp / "run" / "quality_report.html").exists()
 
 
 def test_refuses_to_mix_into_existing_run(setup):
@@ -65,8 +74,8 @@ def test_refuses_to_mix_into_existing_run(setup):
     cfg = make_cfg()
     assert run(["generate", "-c", cfg, "-q"]) == 0
     assert run(["generate", "-c", cfg, "-q"]) == 1
-    assert run(["generate", "-c", cfg, "-q", "--overwrite", "--count", "3"]) == 0
-    assert len(os.listdir(tmp / "run" / "images")) == 3
+    assert run(["generate", "-c", cfg, "-q", "--overwrite", "--count", "4"]) == 0
+    assert len(os.listdir(tmp / "run" / "images")) == 4
 
 
 def test_failed_generator_is_marked(setup):
