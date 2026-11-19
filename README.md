@@ -10,7 +10,7 @@ synthpipe generate --config configs/tools.yaml
 
 The first generator is [ToolVision](https://github.com/moin77/toolvision), a hand-tool dataset (wrench, screwdriver, hammer, pliers) rendered in Blender Cycles.
 
-> Status: v0.4: generate, validate, auto-label, CVAT review round-trip. Hugging Face publishing is next.
+> Status: v0.5: generate, validate, auto-label, CVAT review, publish to Hugging Face. Tests, demo GIF and v1.0 are next.
 
 ## Example report
 
@@ -19,6 +19,8 @@ Every run ends with a quality report like this one, made from the 1,500-image To
 [![Quality report](docs/report_preview.png)](https://moin77.github.io/synthpipe/example_report.html)
 
 **[Open the full interactive report →](https://moin77.github.io/synthpipe/example_report.html)**
+
+Published with `synthpipe publish`: [moindedroper/toolvision-synthetic](https://huggingface.co/datasets/moindedroper/toolvision-synthetic) on Hugging Face, with an auto-generated dataset card.
 
 ## Install
 
@@ -133,6 +135,26 @@ synthpipe cvat-import task_yolo11.zip --task-dir cvat_task --out reviewed --minu
 - **Fast upload.** Images are shrunk to 1600 px on the long side (`--max-side 0` keeps the originals). YOLO boxes are relative, so they still fit; the final dataset gets the original full-size images back.
 - **Safe class mapping.** Labels coming back from CVAT are matched by name, not position, so a different label order in the CVAT task can't swap classes.
 - **What changed.** The import compares the model's boxes with the reviewed ones: kept, class changed, adjusted, drawn by the reviewer, deleted. With `--minutes` it reports seconds per image.
+
+## Publish to Hugging Face
+
+One command writes a dataset card and uploads the dataset:
+
+```bash
+pip install -e .[publish]        # adds huggingface_hub
+hf auth login                    # once, with a token that has write access
+synthpipe publish synthpipe_runs/toolvision_seed42 --repo your-name/toolvision-synthetic --dry-run   # check README.md first
+synthpipe publish synthpipe_runs/toolvision_seed42 --repo your-name/toolvision-synthetic
+```
+
+The card is built from what SynthPipe already recorded, so nothing is typed twice:
+
+- **At a glance:** image and box counts, classes with their share, resolutions, validation result
+- **How it was made:** generator, Blender version, seed, every randomization range, the exact command to rebuild it and the config fingerprint (for real photos: the model, and what the human review changed)
+- **Known limitations, found in the data:** class imbalance, objects bunched in the middle of the frame, empty images, any validation warnings, plus your own `--note` lines
+- License, a citation entry, and a `data.yaml` so `yolo detect train data=data.yaml` works after download
+
+Safety checks: datasets with validation errors are not uploaded (`--force` overrides), and real photos need `--confirm-rights` to confirm you may share them.
 
 ## What the config controls
 
