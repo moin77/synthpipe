@@ -4,6 +4,10 @@
 
 **Config file to labeled synthetic dataset, in one command.**
 
+![SynthPipe demo: generate, validate, auto-label, CVAT review, publish](docs/synthpipe_demo.gif)
+
+*The demo replays real outputs from the ToolVision runs: 1,500 rendered images, 106 real photos reviewed in CVAT, and the published Hugging Face dataset.*
+
 SynthPipe reads a YAML config, runs a Blender generator in the background and writes a YOLO dataset. Every run saves the exact settings, seed and versions next to the dataset, so the same config and seed rebuild it again.
 
 ```bash
