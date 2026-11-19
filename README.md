@@ -16,7 +16,7 @@ synthpipe generate --config configs/tools.yaml
 
 The first generator is [ToolVision](https://github.com/moin77/toolvision), a hand-tool dataset (wrench, screwdriver, hammer, pliers) rendered in Blender Cycles.
 
-> Status: v0.5: generate, validate, auto-label, CVAT review, publish to Hugging Face. Tests, demo GIF and v1.0 are next.
+> **Status:** v0.5. Generate, validate, auto-label, CVAT review and Hugging Face publishing all work, with tests running in CI. Next: v1.0.
 
 ## Example report
 
