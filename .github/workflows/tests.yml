@@ -15,8 +15,8 @@ jobs:
         os: [ubuntu-latest, windows-latest]
         python: ["3.10", "3.12", "3.13"]
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: @v5
+      - uses: @v6
         with:
           python-version: ${{ matrix.python }}
       - name: Install
