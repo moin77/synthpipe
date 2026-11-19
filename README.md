@@ -18,9 +18,9 @@ The first generator is [ToolVision](https://github.com/moin77/toolvision), a han
 
 Every run ends with a quality report like this one, made from the 1,500-image ToolVision dataset (3,177 boxes, all checks passed):
 
-[![Quality report](docs/report_preview.png)](https://moin77.github.io/synthpipe/example_report.html)
+[![Quality report](docs/report_preview.png)](https://moin77.github.io/synthpipe/quality_report.html)
 
-**[Open the full interactive report →](https://moin77.github.io/synthpipe/example_report.html)**
+**[Open the full interactive report →](https://moin77.github.io/synthpipe/quality_report.html)**
 
 Published with `synthpipe publish`: [moindedroper/toolvision-synthetic](https://huggingface.co/datasets/moindedroper/toolvision-synthetic) on Hugging Face, with an auto-generated dataset card.
 
