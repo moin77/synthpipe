@@ -7,7 +7,7 @@ name = "synthpipe"
 dynamic = ["version"]
 description = "Config file to labeled synthetic dataset, in one command (Blender backend)."
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 license = { text = "MIT" }
 authors = [{ name = "Moinul Islam" }]
 dependencies = ["pyyaml>=6.0"]
@@ -15,6 +15,7 @@ dependencies = ["pyyaml>=6.0"]
 [project.optional-dependencies]
 compare = ["pillow", "numpy"]
 autolabel = ["ultralytics", "pillow"]
+publish = ["huggingface_hub>=0.25"]
 dev = ["pytest", "pillow", "numpy"]
 
 [project.scripts]

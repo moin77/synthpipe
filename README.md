@@ -1,5 +1,7 @@
 # SynthPipe
 
+[![tests](https://github.com/moin77/synthpipe/actions/workflows/tests.yml/badge.svg)](https://github.com/moin77/synthpipe/actions/workflows/tests.yml)
+
 **Config file to labeled synthetic dataset, in one command.**
 
 SynthPipe reads a YAML config, runs a Blender generator in the background and writes a YOLO dataset. Every run saves the exact settings, seed and versions next to the dataset, so the same config and seed rebuild it again.
@@ -24,7 +26,7 @@ Published with `synthpipe publish`: [moindedroper/toolvision-synthetic](https://
 
 ## Install
 
-Needs Python 3.9+ and Blender 4.5.
+Needs Python 3.10+ and Blender 4.5.
 
 ```bash
 git clone https://github.com/moin77/synthpipe
@@ -194,7 +196,7 @@ Labels must match byte for byte. Images are compared by hash, then by mean pixel
 pytest
 ```
 
-The tests use a fake Blender, so they run in seconds without rendering.
+41 tests, including one that runs the whole pipeline (generate → validate → auto-label → CVAT round-trip → publish). Blender, the YOLO model, CVAT and Hugging Face are replaced by small fakes, so the suite runs in seconds with no GPU or network. GitHub Actions runs it on Windows and Linux with Python 3.10, 3.12 and 3.13 on every push.
 
 ## License
 
